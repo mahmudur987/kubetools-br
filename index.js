@@ -2,14 +2,11 @@ const express = require("express");
 const app = express();
 const port = process.env.Port || 5000;
 const cors = require("cors");
-const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
-const jwt = require("jsonwebtoken");
-var nodemailer = require("nodemailer");
-const User = require("./models/userModel");
 
-const useRoute = require("./route/userRoute");
-const postRoute = require("./route/postRoute");
+const userRoute = require("./route/userRoute");
+
+const Tool = require("./models/toolsModel");
 
 // middlewere
 
@@ -19,7 +16,8 @@ app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: false }));
 
 const uri =
-  "mongodb+srv://socialmate:4en8zEW1GBgyu4E6@cluster0.ddhlldi.mongodb.net/social-mate?retryWrites=true&w=majority";
+  "mongodb+srv://dbuser1:EoOuSreaLonoEGYH@cluster0.1r7hwr5.mongodb.net/kubetools?retryWrites=true&w=majority";
+// const uri = "mongodb+srv://socialmate:4en8zEW1GBgyu4E6@cluster0.ddhlldi.mongodb.net/social-mate?retryWrites=true&w=majority";
 
 // mongodb connected
 mongoose
@@ -29,93 +27,157 @@ mongoose
   .then(() => console.log("connected to database"))
   .catch((e) => console.error(e));
 
-app.use("/", postRoute);
-app.use("/user", useRoute);
+// user route
+app.use("/user", userRoute);
+// tools routes
 
-// forget password
-app.post("/forgot-password", async (req, res) => {
-  const { email } = req.body;
-  const oldUser = await User.findOne({ email });
-
-  if (!oldUser) {
-    return res.send({ status: "User doesnot exist" });
+// getCategory
+app.get("/categories", async (req, res) => {
+  try {
+    const tools = await Tool.find().populate("category", "name");
+    const categories = tools.map((x) => {
+      return { category: x.category.name, _id: x._id };
+    });
+    res.json({ message: "success", data: categories });
+  } catch (error) {
+    res.status(500).json({ message: "error.message", data: error });
   }
-  const secret = jwt_secret + oldUser.password;
+});
+// delete all categories
 
-  const token = jwt.sign({ email: oldUser.email, id: oldUser._id }, secret);
-  const link = `https://socialmate-server.vercel.app/reset-password/${oldUser._id}/${token}`;
-  var transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: "safemahmud987@gmail.com",
-      pass: "sqwpsqhyqbbhrnly",
-    },
-  });
+app.delete("/deletecategory/:categoryId", async (req, res) => {
+  const { categoryId } = req.params;
 
-  var mailOptions = {
-    from: "safemahmud987@gmail.com",
-    to: email,
-    subject: "password-reset",
-    text:
-      "coppy the link and go for reset password :" + "  " + "  " + "  " + link,
-  };
+  try {
+    // Delete the category
+    const deletedCategory = await Tool.findByIdAndDelete(categoryId);
 
-  transporter.sendMail(mailOptions, function (error, info) {
-    if (error) {
-      console.log(error);
-      return res.send({ status: "Authentication problem try after some time" });
+    if (!deletedCategory) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    // Delete all tools associated with the category
+    await Tool.deleteMany({ "category._id": categoryId });
+
+    res.json({ message: "Category and associated tools deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting category:", error);
+    res.status(500).json({ message: "Error deleting category", error: error });
+  }
+});
+
+// get single toolbar
+app.get("/tools/:id", async (req, res) => {
+  try {
+    const tools = await Tool.findById(req.params.id);
+    res.json({ message: "success", data: tools });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+// get all tools with all category
+app.get("/tools", async (req, res) => {
+  try {
+    const tools = await Tool.find().populate("category", "name");
+    res.json({ message: "success", data: tools });
+  } catch (error) {
+    res.status(500).json({ message: "error.message", data: error });
+  }
+});
+
+// post  tools category
+app.post("/tool", async (req, res) => {
+  try {
+    const data = req.body;
+    console.log(data);
+    const result = await Tool.create(data);
+    res.send({ message: "post successfully", data: result });
+  } catch (error) {
+    res.send({ message: "post successfully", data: error });
+  }
+});
+// post tools
+app.post("/addnewtool/:id", async (req, res) => {
+  const categoryId = req.params.id;
+  const newTool = req.body;
+
+  console.log(categoryId, newTool);
+  try {
+    const result = await Tool.findOneAndUpdate(
+      { _id: categoryId },
+      { $push: { tools: newTool } },
+      { new: true }
+    );
+
+    console.log("Tool updated successfully:", result);
+    res.send({ message: "post successfully", data: result });
+  } catch (error) {
+    console.error("Error updating tool:", error);
+    res.status(500).send({ message: "Error Happen", data: error });
+  }
+});
+
+// update a tool
+
+app.patch("/updatetool/:categoryId/:toolId", async (req, res) => {
+  const { categoryId, toolId } = req.params;
+  const updatedTool = req.body;
+
+  try {
+    const result = await Tool.findOneAndUpdate(
+      { _id: categoryId, "tools._id": toolId },
+      { $set: { "tools.$": updatedTool } },
+      { new: true }
+    );
+
+    if (result) {
+      console.log("Tool updated successfully:", result);
+      res.send({ message: "Tool updated successfully", data: result });
     } else {
-      console.log("Email sent: " + info.response);
-      return res.send({ status: `password reset email sent to ${email}` });
-    }
-  });
-});
-
-app.get("/reset-password/:id/:token", async (req, res) => {
-  const { id, token } = req.params;
-  const olduser = await User.findOne({ _id: id });
-  if (!olduser) {
-    return res.send({ status: "user doesnot exist" });
-  }
-  console.log(olduser);
-  const secret = jwt_secret + olduser.password;
-  try {
-    const verify = jwt.verify(token, secret);
-
-    return res.render("app", { email: verify.email, status: "not verified" });
-  } catch (error) {
-    return res.send({ status: "not verifed or time expires" });
-  }
-});
-app.post("/reset-password/:id/:token", async (req, res) => {
-  const { id, token } = req.params;
-  const { password } = req.body;
-  const { confirmpassword } = req.body;
-  const olduser = await User.findOne({ _id: id });
-
-  console.log(password, confirmpassword);
-  const secret = jwt_secret + olduser.password;
-  try {
-    const verify = jwt.verify(token, secret);
-    const encriptedpassword = await bcrypt.hash(password, 10);
-    if (verify) {
-      const result = await User.updateOne(
-        {
-          _id: id,
-        },
-        {
-          $set: {
-            password: encriptedpassword,
-          },
-        }
-      );
-      res.render("app", { email: verify.email, status: "verified" });
+      console.log("Category or tool not found");
+      res.status(404).send({ message: "Category or tool not found" });
     }
   } catch (error) {
-    return res.send({ status: "not verifed or time expires" });
+    console.error("Error updating tool:", error);
+    res.status(500).send({ message: "Error updating tool", error: error });
   }
 });
 
+// delete a tool
+app.delete("/deletetool/:categoryId/:toolId", async (req, res) => {
+  const { categoryId, toolId } = req.params;
+
+  try {
+    const result = await Tool.findOneAndUpdate(
+      { _id: categoryId },
+      { $pull: { tools: { _id: toolId } } },
+      { new: true }
+    );
+
+    if (result) {
+      console.log("Tool deleted successfully:", result);
+      res.send({ message: "Tool deleted successfully", data: result });
+    } else {
+      console.log("Category not found");
+      res.status(404).send({ message: "Category not found" });
+    }
+  } catch (error) {
+    console.error("Error deleting tool:", error);
+    res.status(500).send({ message: "Error deleting tool", error: error });
+  }
+});
+
+// post all tools
+app.post("/tools", async (req, res) => {
+  try {
+    const data = req.body;
+    const result = await Tool.insertMany(data);
+    res.send({ message: "post successfully", data: result });
+  } catch (error) {
+    res.send({ message: "Error Happen", data: error });
+  }
+});
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
