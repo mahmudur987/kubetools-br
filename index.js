@@ -120,17 +120,36 @@ app.post("/addnewtool/:id", async (req, res) => {
 
 // update a tool
 
+app.patch("/updateCategory/:categoryId", async (req, res) => {
+  const { categoryId } = req.params;
+  const { name } = req.body;
+  try {
+    const result = await Tool.findOneAndUpdate(
+      { _id: categoryId },
+      { $set: { "category.name": name } },
+      { new: true }
+    );
+    if (result) {
+      console.log("Tool updated successfully:", result);
+      res.send({ message: "Tool updated successfully", data: result });
+    } else {
+      console.log("Category or tool not found");
+      res.status(404).send({ message: "Category or tool not found" });
+    }
+  } catch (error) {
+    console.error("Error updating tool:", error);
+    res.status(500).send({ message: "Error updating tool", error: error });
+  }
+});
 app.patch("/updatetool/:categoryId/:toolId", async (req, res) => {
   const { categoryId, toolId } = req.params;
   const updatedTool = req.body;
-
   try {
     const result = await Tool.findOneAndUpdate(
       { _id: categoryId, "tools._id": toolId },
       { $set: { "tools.$": updatedTool } },
       { new: true }
     );
-
     if (result) {
       console.log("Tool updated successfully:", result);
       res.send({ message: "Tool updated successfully", data: result });

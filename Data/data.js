@@ -1195,3 +1195,34 @@ module.exports = toolsData = [
     ],
   },
 ];
+
+module.exports = banner = [
+  {
+    id: 1,
+    index: 0,
+    image: img1,
+    description:
+      "<p>This is the description for item 1.</p><p>It may contain multiple paragraphs.</p><a href='https://example.com'>Visit Example</a>",
+  },
+  {
+    id: 2,
+    index: 1,
+    image: img2,
+    description:
+      "<p>This is the description for item 2.</p><p>It may contain multiple paragraphs as well.</p><a href='https://example.com'>Visit Example</a>",
+  },
+  {
+    id: 3,
+    index: 2,
+    image: img3,
+    description:
+      "<p>This is the description for item 3.</p><p>It can also have links and other HTML elements.</p><a href='https://example.com'>Visit Example</a>",
+  },
+  {
+    id: 3,
+    index: 2,
+    image: img3,
+    description:
+      "<p>This is the description for item 3.</p><p>It can also have links and other HTML elements.</p><a href='https://example.com'>Visit Example</a>",
+  },
+];
