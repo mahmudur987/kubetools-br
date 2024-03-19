@@ -3,21 +3,19 @@ const app = express();
 const port = process.env.Port || 5000;
 const cors = require("cors");
 const mongoose = require("mongoose");
-
+const bodyParser = require("body-parser");
 const userRoute = require("./route/userRoute");
-
+const bannerRoute = require("./route/bannerRoute");
+const imageRoute = require("./route/ImageRoute");
 const Tool = require("./models/toolsModel");
 
 // middlewere
-
 app.use(cors());
 app.use(express.json());
-app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: false }));
-
+// app.use(bodyParser.urlencoded({ extended: false }));
 const uri =
   "mongodb+srv://dbuser1:EoOuSreaLonoEGYH@cluster0.1r7hwr5.mongodb.net/kubetools?retryWrites=true&w=majority";
-// const uri = "mongodb+srv://socialmate:4en8zEW1GBgyu4E6@cluster0.ddhlldi.mongodb.net/social-mate?retryWrites=true&w=majority";
 
 // mongodb connected
 mongoose
@@ -29,6 +27,8 @@ mongoose
 
 // user route
 app.use("/user", userRoute);
+app.use("/banner", bannerRoute);
+app.use("/image", imageRoute.Router);
 // tools routes
 
 // getCategory
