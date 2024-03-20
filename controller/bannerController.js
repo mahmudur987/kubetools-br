@@ -1,6 +1,5 @@
 // controllers/itemController.js
 const Item = require("../models/bannerModel");
-const expressHandeller = require("express-async-handler");
 exports.getItems = async (req, res) => {
   try {
     const result = await Item.find();
@@ -10,19 +9,16 @@ exports.getItems = async (req, res) => {
   }
 };
 
-exports.createItem = expressHandeller(async (req, res) => {
-  console.log(req.body);
-  console.log(req.file);
-  // const item = new Item(data);
-
+exports.createItem = async (req, res) => {
+  const data = req.body;
+  console.log(data);
   try {
-    // const result = await item.save();
-    const result = "result";
+    const result = await Item.create(data);
     return res.json({ message: "success", data: result });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    return res.status(400).json({ message: err.message });
   }
-});
+};
 
 exports.getItemById = async (req, res) => {
   try {
@@ -49,8 +45,8 @@ exports.updateItem = async (req, res) => {
 
 exports.deleteItem = async (req, res) => {
   try {
-    await Item.findByIdAndDelete(req.params.id);
-    res.json({ message: "Item deleted" });
+    const result = await Item.findByIdAndDelete(req.params.id);
+    res.json({ message: "Item deleted", data: result });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

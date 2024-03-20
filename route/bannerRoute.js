@@ -5,15 +5,16 @@ const {
   getItems,
   createItem,
   deleteItem,
+  getItemById,
+  updateItem,
 } = require("../controller/bannerController");
 
 // Routes
-router.post("/", createItem);
 
-router.route("/").get(getItems);
+router.route("/").get(getItems).post(createItem);
 
-// router.get("/items/:id", itemController.getItemById);
-// router.put("/items/:id", itemController.updateItem);
+router.get("/items/:id", getItemById);
+router.put("/items/:id", updateItem);
 router.delete("/items/:id", deleteItem);
 
 module.exports = router;
