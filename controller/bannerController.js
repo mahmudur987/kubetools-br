@@ -2,7 +2,7 @@
 const Item = require("../models/bannerModel");
 exports.getItems = async (req, res) => {
   try {
-    const result = await Item.find();
+    const result = await Item.find().sort({ index: 1 }); // Sort by index in ascending order
     return res.send({ message: "success", data: result });
   } catch (err) {
     return res.status(500).json({ message: err.message });
@@ -11,7 +11,6 @@ exports.getItems = async (req, res) => {
 
 exports.createItem = async (req, res) => {
   const data = req.body;
-  console.log(data);
   try {
     const result = await Item.create(data);
     return res.json({ message: "success", data: result });
