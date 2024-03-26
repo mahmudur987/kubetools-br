@@ -8,6 +8,7 @@ const userRoute = require("./route/userRoute");
 const bannerRoute = require("./route/bannerRoute");
 const imageRoute = require("./route/ImageRoute");
 const Tool = require("./models/toolsModel");
+const Email = require("./models/emailModel");
 
 // middlewere
 app.use(cors());
@@ -31,12 +32,46 @@ app.use("/banner", bannerRoute);
 app.use("/image", imageRoute.Router);
 // tools routes
 
+// email handle
+
+app.post("/email", async (req, res) => {
+  const data = req.body;
+
+  try {
+    const result = await Email.create(data);
+
+    res.json({ message: "success", data: result });
+  } catch (error) {
+    res.status(500).json({ message: "error.message", data: error });
+  }
+});
+app.get("/email", async (req, res) => {
+  try {
+    const result = await Email.find();
+
+    res.json({ message: "success", data: result });
+  } catch (error) {
+    res.status(500).json({ message: "error.message", data: error });
+  }
+});
+app.delete("/email/:id", async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    const result = await Email.findByIdAndDelete(id);
+
+    res.json({ message: "success", data: result });
+  } catch (error) {
+    res.status(500).json({ message: "error.message", data: error });
+  }
+});
+
 // getCategory
 app.get("/categories", async (req, res) => {
   try {
-    const tools = await Tool.find().populate("category", "name");
+    const tools = await Tool.find().sort({ index: 1 });
     const categories = tools.map((x) => {
-      return { category: x.category.name, _id: x._id };
+      return { category: x.category.name, _id: x._id, index: x.index };
     });
     res.json({ message: "success", data: categories });
   } catch (error) {
@@ -122,18 +157,33 @@ app.post("/addnewtool/:id", async (req, res) => {
 
 app.patch("/updateCategory/:categoryId", async (req, res) => {
   const { categoryId } = req.params;
-  const { name } = req.body;
+  const { name, index } = req.body;
+
   try {
-    const result = await Tool.findOneAndUpdate(
-      { _id: categoryId },
-      { $set: { "category.name": name } },
-      { new: true }
-    );
+    let result;
+    if (name !== undefined && index !== undefined) {
+      result = await Tool.findOneAndUpdate(
+        { _id: categoryId },
+        { $set: { "category.name": name, index: index } },
+        { new: true }
+      );
+    } else if (name !== undefined) {
+      result = await Tool.findOneAndUpdate(
+        { _id: categoryId },
+        { $set: { "category.name": name } },
+        { new: true }
+      );
+    } else if (index !== undefined) {
+      result = await Tool.findOneAndUpdate(
+        { _id: categoryId },
+        { $set: { index: index } },
+        { new: true }
+      );
+    }
+
     if (result) {
-      console.log("Tool updated successfully:", result);
       res.send({ message: "Tool updated successfully", data: result });
     } else {
-      console.log("Category or tool not found");
       res.status(404).send({ message: "Category or tool not found" });
     }
   } catch (error) {
@@ -141,6 +191,7 @@ app.patch("/updateCategory/:categoryId", async (req, res) => {
     res.status(500).send({ message: "Error updating tool", error: error });
   }
 });
+
 app.patch("/updatetool/:categoryId/:toolId", async (req, res) => {
   const { categoryId, toolId } = req.params;
   const updatedTool = req.body;
@@ -184,6 +235,25 @@ app.delete("/deletetool/:categoryId/:toolId", async (req, res) => {
   } catch (error) {
     console.error("Error deleting tool:", error);
     res.status(500).send({ message: "Error deleting tool", error: error });
+  }
+});
+// update all tool
+app.patch("/updateTool", async (req, res) => {
+  try {
+    // Fetch all documents from the collection
+    const tools = await Tool.find();
+
+    let i = 1;
+    for (const tool of tools) {
+      tool.index = i;
+      i = i + 1;
+      await tool.save(); // Save each document individually
+    }
+
+    res.status(200).json({ message: "Tool indexes updated successfully." });
+  } catch (error) {
+    console.error("Error updating tool indexes:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

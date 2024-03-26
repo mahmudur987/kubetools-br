@@ -47,7 +47,7 @@ bannerSchema.pre("findOneAndUpdate", async function (next) {
     next(error); // Pass any errors to the next middleware or error handler
   }
 });
-v;
+
 const Item = mongoose.model("banner", bannerSchema);
 
 module.exports = Item;
