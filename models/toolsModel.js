@@ -1,21 +1,22 @@
 const mongoose = require("mongoose");
 
-const tool = new mongoose.Schema({
+const repo = new mongoose.Schema({
   name: String,
   description: String,
   link: String,
   githubStars: Number,
   publishDate: { type: Date, default: new Date() },
 });
-const toolSchema = new mongoose.Schema({
+const data = new mongoose.Schema({
   index: { type: Number },
   category: {
     name: { type: String, required: true },
   },
-  tools: [tool],
-  publishDate: { type: Date, default: new Date() },
+  tools: [repo],
+  publishDate: { type: Date },
 });
-toolSchema.pre("findOneAndUpdate", async function (next) {
+
+data.pre("findOneAndUpdate", async function (next) {
   try {
     const update = this.getUpdate();
     const indexToUpdate = update.$set && update.$set["tools.$.index"]; // Assuming index is nested within tools array
@@ -54,6 +55,6 @@ toolSchema.pre("findOneAndUpdate", async function (next) {
   }
 });
 
-const Tool = mongoose.model("Tool", toolSchema);
+const Tool = mongoose.model("Tool", data);
 
 module.exports = Tool;

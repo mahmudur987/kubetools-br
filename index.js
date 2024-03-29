@@ -114,7 +114,7 @@ app.get("/tools/:id", async (req, res) => {
 // get all tools with all category
 app.get("/tools", async (req, res) => {
   try {
-    const tools = await Tool.find().populate("category", "name");
+    const tools = await Tool.find().sort({ index: 1 });
     res.json({ message: "success", data: tools });
   } catch (error) {
     res.status(500).json({ message: "error.message", data: error });
@@ -125,19 +125,18 @@ app.get("/tools", async (req, res) => {
 app.post("/tool", async (req, res) => {
   try {
     const data = req.body;
-    console.log(data);
+    data.publishDate = new Date();
     const result = await Tool.create(data);
     res.send({ message: "post successfully", data: result });
   } catch (error) {
-    res.send({ message: "post successfully", data: error });
+    res.send({ message: "post not successfully", data: error });
   }
 });
 // post tools
 app.post("/addnewtool/:id", async (req, res) => {
   const categoryId = req.params.id;
   const newTool = req.body;
-
-  console.log(categoryId, newTool);
+  newTool.publishDate = new Date();
   try {
     const result = await Tool.findOneAndUpdate(
       { _id: categoryId },
@@ -195,6 +194,8 @@ app.patch("/updateCategory/:categoryId", async (req, res) => {
 app.patch("/updatetool/:categoryId/:toolId", async (req, res) => {
   const { categoryId, toolId } = req.params;
   const updatedTool = req.body;
+  // Remove the publishDate field from the updatedTool object
+  delete updatedTool.publishDate;
   try {
     const result = await Tool.findOneAndUpdate(
       { _id: categoryId, "tools._id": toolId },
@@ -202,7 +203,6 @@ app.patch("/updatetool/:categoryId/:toolId", async (req, res) => {
       { new: true }
     );
     if (result) {
-      console.log("Tool updated successfully:", result);
       res.send({ message: "Tool updated successfully", data: result });
     } else {
       console.log("Category or tool not found");
@@ -238,21 +238,23 @@ app.delete("/deletetool/:categoryId/:toolId", async (req, res) => {
   }
 });
 // update all tool
+
 app.patch("/updateTool", async (req, res) => {
   try {
-    // Fetch all documents from the collection
-    const tools = await Tool.find();
+    // Update all tool documents to set publishDate to current date
+    const currentDate = new Date();
 
-    let i = 1;
-    for (const tool of tools) {
-      tool.index = i;
-      i = i + 1;
-      await tool.save(); // Save each document individually
-    }
+    const result = await Tool.updateMany(
+      {},
+      { $set: { "tools.$[].publishDate": currentDate } }
+    );
 
-    res.status(200).json({ message: "Tool indexes updated successfully." });
+    return res.status(200).json({
+      message: "Tool publish dates updated successfully.",
+      data: result,
+    });
   } catch (error) {
-    console.error("Error updating tool indexes:", error);
+    console.error("Error updating tool publish dates:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
