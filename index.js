@@ -120,6 +120,23 @@ app.get("/tools", async (req, res) => {
     res.status(500).json({ message: "error.message", data: error });
   }
 });
+app.get("/tools/search/:search", async (req, res) => {
+  try {
+    const { search } = req.params;
+
+    // Use a regular expression to match category names that start with the search string
+    const regex = new RegExp(`^${search}`, "i");
+
+    // Find tools where category name matches the search
+    const tools = await Tool.find({
+      "category.name": regex,
+    });
+
+    res.json({ message: "success", data: tools });
+  } catch (error) {
+    res.status(500).json({ message: error.message, data: error });
+  }
+});
 
 // post  tools category
 app.post("/tool", async (req, res) => {
