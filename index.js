@@ -121,20 +121,39 @@ app.get("/tools", async (req, res) => {
   }
 });
 app.get("/tools/search/:search", async (req, res) => {
+  // try {
+  //   const { search } = req.params;
+
+  //   // Use a regular expression to match category names that start with the search string
+  //   const regex = new RegExp(`^${search}`, "i");
+
+  //   // Find tools where category name matches the search
+  //   const tools = await Tool.find({
+  //     "category.name": regex,
+  //   });
+
+  //   res.json({ message: "success", data: tools });
+  // } catch (error) {
+  //   res.status(500).json({ message: error.message, data: error });
+  // }
+
+  const searchQuery = req.params.search;
+
   try {
-    const { search } = req.params;
+    // Find tools whose names contain the specified letter
+    const tools = await Tool.find(
+      { "tools.name": { $regex: new RegExp(searchQuery, "i") } },
+      { "tools.$": 1 }
+    );
 
-    // Use a regular expression to match category names that start with the search string
-    const regex = new RegExp(`^${search}`, "i");
+    if (!tools || tools.length === 0) {
+      return res.status(404).json({ message: "No tools found" });
+    }
 
-    // Find tools where category name matches the search
-    const tools = await Tool.find({
-      "category.name": regex,
-    });
-
-    res.json({ message: "success", data: tools });
+    return res.json({ message: "success", data: tools });
   } catch (error) {
-    res.status(500).json({ message: error.message, data: error });
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
