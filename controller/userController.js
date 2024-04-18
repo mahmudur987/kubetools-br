@@ -77,13 +77,31 @@ exports.getAllUser = async (req, res) => {
   }
 };
 exports.updateUser = async (req, res) => {
-  try {
-    const updatedItem = await User.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    res.json({ status: "User updated successfully", data: updatedItem });
-  } catch (err) {
-    res.status(400).json({ status: err.message });
+  const { name, email, password } = req.body;
+
+  if (password) {
+    const encryptedPassword = await bcrypt.hash(password, 10);
+    console.log(encryptedPassword, password);
+    try {
+      const updatedItem = await User.findByIdAndUpdate(req.params.id, {
+        name,
+        email,
+        password: encryptedPassword,
+      });
+      res.json({ status: "User updated successfully", data: updatedItem });
+    } catch (err) {
+      res.status(400).json({ status: err.message });
+    }
+  } else {
+    try {
+      const updatedItem = await User.findByIdAndUpdate(req.params.id, {
+        name,
+        email,
+      });
+      res.json({ status: "User updated successfully", data: updatedItem });
+    } catch (err) {
+      res.status(400).json({ status: err.message });
+    }
   }
 };
 exports.deleteUser = async (req, res) => {
