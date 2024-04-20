@@ -4,7 +4,7 @@ const repo = new mongoose.Schema({
   name: String,
   description: String,
   link: String,
-  githubStars: Number,
+  githubStars: String,
   publishDate: { type: Date, default: new Date() },
 });
 const data = new mongoose.Schema({
