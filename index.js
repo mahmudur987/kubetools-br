@@ -27,9 +27,9 @@ mongoose
   .catch((e) => console.error(e));
 
 // user route
-app.use("/user", userRoute);
-app.use("/banner", bannerRoute);
-app.use("/image", imageRoute.Router);
+app.use("/api/user", userRoute);
+app.use("/api/banner", bannerRoute);
+app.use("/api/image", imageRoute.Router);
 // tools routes
 
 // email handle
@@ -121,22 +121,6 @@ app.get("/tools", async (req, res) => {
   }
 });
 app.get("/tools/search/:search", async (req, res) => {
-  // try {
-  //   const { search } = req.params;
-
-  //   // Use a regular expression to match category names that start with the search string
-  //   const regex = new RegExp(`^${search}`, "i");
-
-  //   // Find tools where category name matches the search
-  //   const tools = await Tool.find({
-  //     "category.name": regex,
-  //   });
-
-  //   res.json({ message: "success", data: tools });
-  // } catch (error) {
-  //   res.status(500).json({ message: error.message, data: error });
-  // }
-
   const searchQuery = req.params.search;
 
   try {
