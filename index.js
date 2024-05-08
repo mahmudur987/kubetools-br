@@ -288,7 +288,7 @@ app.post("/api/tools", async (req, res) => {
     res.send({ message: "Error Happen", data: error });
   }
 });
-app.get("/api", (req, res) => {
+app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
