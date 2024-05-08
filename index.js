@@ -66,7 +66,7 @@ app.delete("/api/email/:id", async (req, res) => {
 });
 
 // Category
-sapp.get("/api/categories", async (req, res) => {
+app.get("/api/categories", async (req, res) => {
   try {
     const tools = await Tool.find().sort({ index: 1 });
     const categories = tools.map((x) => {
