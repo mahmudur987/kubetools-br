@@ -1,8 +1,22 @@
 {
   "version": 2,
-  "builds": [{ "src": "index.js", "use": "@vercel/node" }],
   "routes": [
-    { "src": "/api/.*", "dest": "api/index.js" },
-    { "src": "/(.*)", "dest": "index.js" }
+    { "src": "/api/user", "dest": "/index.js" },
+    { "src": "/api/banner", "dest": "/index.js" },
+    { "src": "/api/image", "dest": "/index.js" },
+    { "src": "/api/email", "dest": "/index.js" },
+    { "src": "/api/categories", "dest": "/index.js" },
+    { "src": "/api/deletecategory/:categoryId", "dest": "/index.js" },
+    { "src": "/api/tools/:id", "dest": "/index.js" },
+    { "src": "/api/tools", "dest": "/index.js" },
+    { "src": "/api/tools/search/:search", "dest": "/index.js" },
+    { "src": "/api/tool", "dest": "/index.js" },
+    { "src": "/api/addnewtool/:id", "dest": "/index.js" },
+    { "src": "/api/updateCategory/:categoryId", "dest": "/index.js" },
+    { "src": "/api/updatetool/:categoryId/:toolId", "dest": "/index.js" },
+    { "src": "/api/deletetool/:categoryId/:toolId", "dest": "/index.js" },
+    { "src": "/api/updateTool", "dest": "/index.js" },
+    { "src": "/api/tools", "dest": "/index.js" },
+    { "src": "/", "dest": "/index.js" }
   ]
 }
