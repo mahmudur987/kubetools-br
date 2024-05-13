@@ -14,7 +14,7 @@ const verifySite = require("./middleware/verifySite");
 const allowedOrigins = [
   "http://localhost:3000",
   "https://kubetools-be.vercel.app",
-  "https://kubetools.io/",
+  "https://kubetools.io",
 ];
 
 const corsOptions = {
