@@ -10,7 +10,7 @@ const Tool = require("./models/toolsModel");
 const Email = require("./models/emailModel");
 
 // Middleware
-const allowedOrigin = "https://kubetools.io/api"; // Replace with your allowed origin
+const allowedOrigin = "http://localhost:3000";
 const corsOptions = {
   origin: allowedOrigin,
 };
@@ -293,7 +293,7 @@ app.post("/api/tools", async (req, res) => {
     res.send({ message: "Error Happen", data: error });
   }
 });
-app.get("/app", (req, res) => {
+app.get("/app/api", (req, res) => {
   res.send("Hello World!");
 });
 
