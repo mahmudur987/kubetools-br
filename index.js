@@ -13,7 +13,7 @@ const verifySite = require("./middleware/verifySite");
 // Middleware
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://kubetools-be.vercel.app",
+  "https://kube-tools-fe.vercel.app",
   "https://kubetools.io",
 ];
 
