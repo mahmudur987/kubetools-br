@@ -8,11 +8,23 @@ const bannerRoute = require("./route/bannerRoute");
 const imageRoute = require("./route/ImageRoute");
 const Tool = require("./models/toolsModel");
 const Email = require("./models/emailModel");
+const verifySite = require("./middleware/verifySite");
 
 // Middleware
-const allowedOrigin = "http://localhost:3000";
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://kubetools-be.vercel.app",
+  "https://kubetools.io/",
+];
+
 const corsOptions = {
-  origin: allowedOrigin,
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
 };
 app.use(cors(corsOptions));
 app.use(express.json());
@@ -38,7 +50,7 @@ app.use("/api/image", imageRoute.Router);
 
 // email handle
 
-app.post("/api/email", async (req, res) => {
+app.post("/api/email", verifySite, async (req, res) => {
   const data = req.body;
 
   try {
@@ -49,7 +61,7 @@ app.post("/api/email", async (req, res) => {
     res.status(500).json({ message: "error.message", data: error });
   }
 });
-app.get("/api/email", async (req, res) => {
+app.get("/api/email", verifySite, async (req, res) => {
   try {
     const result = await Email.find();
 
@@ -58,7 +70,7 @@ app.get("/api/email", async (req, res) => {
     res.status(500).json({ message: "error.message", data: error });
   }
 });
-app.delete("/api/email/:id", async (req, res) => {
+app.delete("/api/email/:id", verifySite, async (req, res) => {
   const id = req.params.id;
 
   try {
@@ -71,7 +83,7 @@ app.delete("/api/email/:id", async (req, res) => {
 });
 
 // Category
-app.get("/api/categories", async (req, res) => {
+app.get("/api/categories", verifySite, async (req, res) => {
   try {
     const tools = await Tool.find().sort({ index: 1 });
     const categories = tools.map((x) => {
@@ -84,7 +96,7 @@ app.get("/api/categories", async (req, res) => {
 });
 // delete all categories
 
-app.delete("/api/deletecategory/:categoryId", async (req, res) => {
+app.delete("/api/deletecategory/:categoryId", verifySite, async (req, res) => {
   const { categoryId } = req.params;
 
   try {
@@ -106,7 +118,7 @@ app.delete("/api/deletecategory/:categoryId", async (req, res) => {
 });
 
 // get single toolbar
-app.get("/api/tools/:id", async (req, res) => {
+app.get("/api/tools/:id", verifySite, async (req, res) => {
   try {
     const tools = await Tool.findById(req.params.id);
     res.json({ message: "success", data: tools });
@@ -116,7 +128,7 @@ app.get("/api/tools/:id", async (req, res) => {
   }
 });
 // get all tools with all category
-app.get("/api/tools", async (req, res) => {
+app.get("/api/tools", verifySite, async (req, res) => {
   try {
     const tools = await Tool.find().sort({ index: 1 });
     res.json({ message: "success", data: tools });
@@ -124,7 +136,7 @@ app.get("/api/tools", async (req, res) => {
     res.status(500).json({ message: "error.message", data: error });
   }
 });
-app.get("/api/tools/search/:search", async (req, res) => {
+app.get("/api/tools/search/:search", verifySite, async (req, res) => {
   const searchQuery = req.params.search;
 
   try {
@@ -146,7 +158,7 @@ app.get("/api/tools/search/:search", async (req, res) => {
 });
 
 // post  tools category
-app.post("/api/tool", async (req, res) => {
+app.post("/api/tool", verifySite, async (req, res) => {
   try {
     const data = req.body;
     data.publishDate = new Date();
@@ -157,7 +169,7 @@ app.post("/api/tool", async (req, res) => {
   }
 });
 // post tools
-app.post("/api/addnewtool/:id", async (req, res) => {
+app.post("/api/addnewtool/:id", verifySite, async (req, res) => {
   const categoryId = req.params.id;
   const newTool = req.body;
   newTool.publishDate = new Date();
@@ -178,7 +190,7 @@ app.post("/api/addnewtool/:id", async (req, res) => {
 
 // update a tool
 
-app.patch("/api/updateCategory/:categoryId", async (req, res) => {
+app.patch("/api/updateCategory/:categoryId", verifySite, async (req, res) => {
   const { categoryId } = req.params;
   const { name, index } = req.body;
 
@@ -215,55 +227,63 @@ app.patch("/api/updateCategory/:categoryId", async (req, res) => {
   }
 });
 
-app.patch("/api/updatetool/:categoryId/:toolId", async (req, res) => {
-  const { categoryId, toolId } = req.params;
-  const updatedTool = req.body;
-  // Remove the publishDate field from the updatedTool object
-  delete updatedTool.publishDate;
-  try {
-    const result = await Tool.findOneAndUpdate(
-      { _id: categoryId, "tools._id": toolId },
-      { $set: { "tools.$": updatedTool } },
-      { new: true }
-    );
-    if (result) {
-      res.send({ message: "Tool updated successfully", data: result });
-    } else {
-      console.log("Category or tool not found");
-      res.status(404).send({ message: "Category or tool not found" });
+app.patch(
+  "/api/updatetool/:categoryId/:toolId",
+  verifySite,
+  async (req, res) => {
+    const { categoryId, toolId } = req.params;
+    const updatedTool = req.body;
+    // Remove the publishDate field from the updatedTool object
+    delete updatedTool.publishDate;
+    try {
+      const result = await Tool.findOneAndUpdate(
+        { _id: categoryId, "tools._id": toolId },
+        { $set: { "tools.$": updatedTool } },
+        { new: true }
+      );
+      if (result) {
+        res.send({ message: "Tool updated successfully", data: result });
+      } else {
+        console.log("Category or tool not found");
+        res.status(404).send({ message: "Category or tool not found" });
+      }
+    } catch (error) {
+      console.error("Error updating tool:", error);
+      res.status(500).send({ message: "Error updating tool", error: error });
     }
-  } catch (error) {
-    console.error("Error updating tool:", error);
-    res.status(500).send({ message: "Error updating tool", error: error });
   }
-});
+);
 
 // delete a tool
-app.delete("/api/deletetool/:categoryId/:toolId", async (req, res) => {
-  const { categoryId, toolId } = req.params;
+app.delete(
+  "/api/deletetool/:categoryId/:toolId",
+  verifySite,
+  async (req, res) => {
+    const { categoryId, toolId } = req.params;
 
-  try {
-    const result = await Tool.findOneAndUpdate(
-      { _id: categoryId },
-      { $pull: { tools: { _id: toolId } } },
-      { new: true }
-    );
+    try {
+      const result = await Tool.findOneAndUpdate(
+        { _id: categoryId },
+        { $pull: { tools: { _id: toolId } } },
+        { new: true }
+      );
 
-    if (result) {
-      console.log("Tool deleted successfully:", result);
-      res.send({ message: "Tool deleted successfully", data: result });
-    } else {
-      console.log("Category not found");
-      res.status(404).send({ message: "Category not found" });
+      if (result) {
+        console.log("Tool deleted successfully:", result);
+        res.send({ message: "Tool deleted successfully", data: result });
+      } else {
+        console.log("Category not found");
+        res.status(404).send({ message: "Category not found" });
+      }
+    } catch (error) {
+      console.error("Error deleting tool:", error);
+      res.status(500).send({ message: "Error deleting tool", error: error });
     }
-  } catch (error) {
-    console.error("Error deleting tool:", error);
-    res.status(500).send({ message: "Error deleting tool", error: error });
   }
-});
+);
 // update all tool
 
-app.patch("/api/updateTool", async (req, res) => {
+app.patch("/api/updateTool", verifySite, async (req, res) => {
   try {
     // Update all tool documents to set publishDate to current date
     const currentDate = new Date();
@@ -284,7 +304,7 @@ app.patch("/api/updateTool", async (req, res) => {
 });
 
 // post all tools
-app.post("/api/tools", async (req, res) => {
+app.post("/api/tools", verifySite, async (req, res) => {
   try {
     const data = req.body;
     const result = await Tool.insertMany(data);

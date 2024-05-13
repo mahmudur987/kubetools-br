@@ -8,12 +8,13 @@ const {
   getItemById,
   updateItem,
 } = require("../controller/bannerController");
+const verifySite = require("../middleware/verifySite");
 // Routes
 router.route("/").get(getItems).post(createItem);
 router
   .route("/items/:id")
-  .get(getItemById)
-  .patch(updateItem)
-  .delete(deleteItem);
+  .get(verifySite, getItemById)
+  .patch(verifySite, updateItem)
+  .delete(verifySite, deleteItem);
 
 module.exports = router;

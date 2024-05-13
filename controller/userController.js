@@ -81,7 +81,7 @@ exports.updateUser = async (req, res) => {
 
   if (password) {
     const encryptedPassword = await bcrypt.hash(password, 10);
-    console.log(encryptedPassword, password);
+
     try {
       const updatedItem = await User.findByIdAndUpdate(req.params.id, {
         name,
