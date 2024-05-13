@@ -10,7 +10,7 @@ const {
 } = require("../controller/bannerController");
 const verifySite = require("../middleware/verifySite");
 // Routes
-router.route("/").get(getItems).post(createItem);
+router.route("/").get(verifySite, getItems).post(verifySite, createItem);
 router
   .route("/items/:id")
   .get(verifySite, getItemById)
