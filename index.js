@@ -9,20 +9,25 @@ const imageRoute = require("./route/ImageRoute");
 const Tool = require("./models/toolsModel");
 const Email = require("./models/emailModel");
 
-// middlewere
-app.use(cors());
+// Middleware
+const allowedOrigin = "https://kubetools.io/api"; // Replace with your allowed origin
+const corsOptions = {
+  origin: allowedOrigin,
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-// app.use(bodyParser.urlencoded({ extended: false }));
+
+// MongoDB connection URI
 const uri =
   "mongodb+srv://dbuser1:EoOuSreaLonoEGYH@cluster0.1r7hwr5.mongodb.net/kubetools?retryWrites=true&w=majority";
 
-// mongodb connected
+// Connect to MongoDB
 mongoose
   .connect(uri, {
     useNewUrlParser: true,
   })
-  .then(() => console.log("connected to database"))
+  .then(() => console.log("Connected to database"))
   .catch((e) => console.error(e));
 
 // user route
