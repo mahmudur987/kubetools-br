@@ -12,17 +12,6 @@ const verifySite = (req, res, next) => {
     return res.status(401).json({ message: "Unauthorized access" });
   }
 
-  //   jwt.verify(token, jwt_secret, (err, decoded) => {
-  //     if (err) {
-  //       return res
-  //         .status(401)
-  //         .json({ message: "Your Time is expire please logIn again" });
-  //     }
-
-  //     req.user = decoded;
-
-  //   });
-
   next();
 };
 

@@ -15,6 +15,7 @@ const allowedOrigins = [
   "http://localhost:3000",
   "https://kube-tools-fe.vercel.app",
   "https://kubetools.io",
+  "http://3.110.46.129:3000",
 ];
 
 const corsOptions = {
@@ -314,7 +315,7 @@ app.post("/api/tools", verifySite, async (req, res) => {
   }
 });
 app.get("/app/api", (req, res) => {
-  res.send("Hello World!");
+  res.send("Hello Kube tools ");
 });
 
 app.listen(port, () => {
