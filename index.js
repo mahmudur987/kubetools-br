@@ -16,6 +16,7 @@ const allowedOrigins = [
   "https://kube-tools-fe.vercel.app",
   "https://kubetools.io",
   "http://3.110.46.129:3000",
+  "http://3.110.46.129",
 ];
 
 const corsOptions = {
