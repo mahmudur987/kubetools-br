@@ -9,7 +9,7 @@ const imageRoute = require("./route/ImageRoute");
 const Tool = require("./models/toolsModel");
 const Email = require("./models/emailModel");
 const verifySite = require("./middleware/verifySite");
-
+require("dotenv").config();
 // Middleware
 const allowedOrigins = [
   "http://localhost:3000",
@@ -33,9 +33,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // MongoDB connection URI
-const uri =
-  "mongodb+srv://dbuser1:EoOuSreaLonoEGYH@cluster0.1r7hwr5.mongodb.net/kubetools?retryWrites=true&w=majority";
-
+const uri = process.env.MONGODB_URI;
 // Connect to MongoDB
 mongoose
   .connect(uri, {
